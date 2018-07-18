@@ -358,6 +358,12 @@ func serverMain(ctx *cli.Context) {
 		logger.FatalIf(err, "Unable to initialize disk caching")
 	}
 
+	// Create new IAM system.
+	globalIAMSys = NewIAMSys()
+	if err := globalIAMSys.Init(newObject); err != nil {
+		logger.Fatal(err, "Unable to initialize IAM system")
+	}
+
 	// Create new policy system.
 	globalPolicySys = NewPolicySys()
 

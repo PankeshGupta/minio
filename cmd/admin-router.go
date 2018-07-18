@@ -73,4 +73,9 @@ func registerAdminRouter(router *mux.Router) {
 	adminV1Router.Methods(http.MethodGet).Path("/config-keys").HandlerFunc(httpTraceHdrs(adminAPI.GetConfigKeysHandler))
 	// Set config keys/values
 	adminV1Router.Methods(http.MethodPut).Path("/config-keys").HandlerFunc(httpTraceHdrs(adminAPI.SetConfigKeysHandler))
+
+	// IAM Admin APIs - Get IAM.
+	adminV1Router.Methods(http.MethodGet).Path("/iam").HandlerFunc(httpTraceHdrs(adminAPI.GetIAMHandler))
+	// IAM Admin APIs - Set IAM.
+	adminV1Router.Methods(http.MethodPut).Path("/iam").HandlerFunc(httpTraceHdrs(adminAPI.SetIAMHandler))
 }

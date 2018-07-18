@@ -23,7 +23,6 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -130,7 +129,7 @@ func (adm *AdminClient) SetConfig(config io.Reader) (err error) {
 	configBuf := make([]byte, maxConfigJSONSize+1)
 	n, err := io.ReadFull(config, configBuf)
 	if err == nil {
-		return fmt.Errorf("too large file")
+		return bytes.ErrTooLarge
 	}
 	if err != io.ErrUnexpectedEOF {
 		return err
