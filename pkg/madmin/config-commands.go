@@ -19,59 +19,15 @@ package madmin
 
 import (
 	"bytes"
-	"crypto/rand"
 	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"net/url"
 
 	"github.com/minio/minio/pkg/quick"
-	"github.com/minio/sio"
-	"golang.org/x/crypto/argon2"
 )
-
-// EncryptServerConfigData - encrypts server config data.
-func EncryptServerConfigData(password string, data []byte) ([]byte, error) {
-	salt := make([]byte, 32)
-	if _, err := io.ReadFull(rand.Reader, salt); err != nil {
-		return nil, err
-	}
-
-	// derive an encryption key from the master key and the nonce
-	var key [32]byte
-	copy(key[:], argon2.IDKey([]byte(password), salt, 1, 64*1024, 4, 32))
-
-	encrypted, err := sio.EncryptReader(bytes.NewReader(data), sio.Config{
-		Key: key[:]},
-	)
-	if err != nil {
-		return nil, err
-	}
-	edata, err := ioutil.ReadAll(encrypted)
-	return append(salt, edata...), err
-}
-
-// DecryptServerConfigData - decrypts server config data.
-func DecryptServerConfigData(password string, data io.Reader) ([]byte, error) {
-	salt := make([]byte, 32)
-	if _, err := io.ReadFull(data, salt); err != nil {
-		return nil, err
-	}
-	// derive an encryption key from the master key and the nonce
-	var key [32]byte
-	copy(key[:], argon2.IDKey([]byte(password), salt, 1, 64*1024, 4, 32))
-
-	decrypted, err := sio.DecryptReader(data, sio.Config{
-		Key: key[:]},
-	)
-	if err != nil {
-		return nil, err
-	}
-	return ioutil.ReadAll(decrypted)
-}
 
 // GetConfig - returns the config.json of a minio setup, incoming data is encrypted.
 func (adm *AdminClient) GetConfig() ([]byte, error) {
@@ -88,7 +44,7 @@ func (adm *AdminClient) GetConfig() ([]byte, error) {
 	}
 	defer closeResponse(resp)
 
-	return DecryptServerConfigData(adm.secretAccessKey, resp.Body)
+	return DecryptData(adm.secretAccessKey, resp.Body)
 }
 
 // GetConfigKeys - returns partial json or json value from config.json of a minio setup.
@@ -155,7 +111,7 @@ func (adm *AdminClient) SetConfig(config io.Reader) (err error) {
 		return errors.New("Duplicate key in json file: " + err.Error())
 	}
 
-	econfigBytes, err := EncryptServerConfigData(adm.secretAccessKey, configBytes)
+	econfigBytes, err := EncryptData(adm.secretAccessKey, configBytes)
 	if err != nil {
 		return err
 	}
