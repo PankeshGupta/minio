@@ -189,6 +189,9 @@ func StartGateway(ctx *cli.Context, gw Gateway) {
 
 	initNSLock(false) // Enable local namespace lock.
 
+	// Create new IAM system.
+	globalIAMSys = NewIAMSys()
+
 	// Create new notification system.
 	globalNotificationSys = NewNotificationSys(globalServerConfig, EndpointList{})
 

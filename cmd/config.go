@@ -20,7 +20,6 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"io"
 	"io/ioutil"
 	"os"
 	"path"
@@ -78,22 +77,18 @@ func saveServerConfig(ctx context.Context, objAPI ObjectLayer, config *serverCon
 	}
 
 	// Save the new config in the std config path
-	return saveConfig(objAPI, configFile, data)
+	return saveConfig(ctx, objAPI, configFile, data)
 }
 
 func readServerConfig(ctx context.Context, objAPI ObjectLayer) (*serverConfig, error) {
 	var configData []byte
 	var err error
+
 	configFile := path.Join(minioConfigPrefix, minioConfigFile)
 	if globalEtcdClient != nil {
-		configData, err = readConfigEtcd(configFile)
+		configData, err = readConfigEtcd(ctx, globalEtcdClient, configFile)
 	} else {
-		var reader io.Reader
-		reader, err = readConfig(ctx, objAPI, configFile)
-		if err != nil {
-			return nil, err
-		}
-		configData, err = ioutil.ReadAll(reader)
+		configData, err = readConfig(ctx, objAPI, configFile)
 	}
 	if err != nil {
 		return nil, err
@@ -146,7 +141,7 @@ func migrateConfigToMinioSys(objAPI ObjectLayer) error {
 
 	configFile := path.Join(minioConfigPrefix, minioConfigFile)
 	// Verify if backend already has the file.
-	if err := checkConfig(context.Background(), configFile, objAPI); err != errConfigNotFound {
+	if err := checkConfig(context.Background(), objAPI, configFile); err != errConfigNotFound {
 		return err
 	} // if errConfigNotFound proceed to migrate..
 
@@ -203,7 +198,7 @@ func initConfig(objAPI ObjectLayer) error {
 	// Watch config for changes and reloads them in-memory.
 	go watchConfig(objAPI, configFile, loadConfig)
 
-	if err := checkConfig(context.Background(), configFile, objAPI); err != nil {
+	if err := checkConfig(context.Background(), objAPI, configFile); err != nil {
 		if err == errConfigNotFound {
 			// Config file does not exist, we create it fresh and return upon success.
 			if err = newSrvConfig(objAPI); err != nil {

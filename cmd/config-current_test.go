@@ -237,7 +237,7 @@ func TestValidateConfig(t *testing.T) {
 	}
 
 	for i, testCase := range testCases {
-		if err = saveConfig(objLayer, configPath, []byte(testCase.configData)); err != nil {
+		if err = saveConfig(context.Background(), objLayer, configPath, []byte(testCase.configData)); err != nil {
 			t.Fatal(err)
 		}
 		_, err = getValidConfig(objLayer)
