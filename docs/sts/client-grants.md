@@ -40,7 +40,7 @@ $ export MINIO_IAM_JWKS_URL=https://localhost:9443/oauth2/jwks
 $ export MINIO_IAM_OPA_URL=http://localhost:8181/v1/data/httpapi/authz
 $ minio server /mnt/export
 
-$ ETCDCTL_API=3 etcdctl get /config/iam/iam.json --print-value-only | jq .
+$ ETCDCTL_API=3 etcdctl get config/iam/iam.json --print-value-only
 {
   "version": "1",
   "identity": {

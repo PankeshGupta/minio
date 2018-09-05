@@ -20,7 +20,6 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"io/ioutil"
 	"os"
 	"path"
 	"runtime"
@@ -58,16 +57,10 @@ func saveServerConfig(ctx context.Context, objAPI ObjectLayer, config *serverCon
 	}
 
 	// Create a backup of the current config
-	reader, err := readConfig(ctx, objAPI, configFile)
+	oldData, err := readConfig(ctx, objAPI, configFile)
 	if err == nil {
-		var oldData []byte
-		oldData, err = ioutil.ReadAll(reader)
-		if err != nil {
-			return err
-		}
 		backupConfigFile := path.Join(minioConfigPrefix, minioConfigBackupFile)
-		err = saveConfig(objAPI, backupConfigFile, oldData)
-		if err != nil {
+		if err = saveConfig(ctx, objAPI, backupConfigFile, oldData); err != nil {
 			return err
 		}
 	} else {

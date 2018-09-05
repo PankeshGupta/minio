@@ -74,7 +74,7 @@ func (adm *AdminClient) GetConfigKeys(keys []string) ([]byte, error) {
 		return nil, httpRespToErrorResponse(resp)
 	}
 
-	return DecryptServerConfigData(adm.secretAccessKey, resp.Body)
+	return DecryptData(adm.secretAccessKey, resp.Body)
 }
 
 // SetConfig - set config supplied as config.json for the setup.
@@ -140,7 +140,7 @@ func (adm *AdminClient) SetConfig(config io.Reader) (err error) {
 func (adm *AdminClient) SetConfigKeys(params map[string]string) error {
 	queryVals := make(url.Values)
 	for k, v := range params {
-		encryptedVal, err := EncryptServerConfigData(adm.secretAccessKey, []byte(v))
+		encryptedVal, err := EncryptData(adm.secretAccessKey, []byte(v))
 		if err != nil {
 			return err
 		}
